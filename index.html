@@ -1,0 +1,415 @@
+<!doctype html>
+<html>
+<head>
+    <title>An Analysis of Vacants Reported in Baltimore</title>
+    <link rel="stylesheet" href="assets/css/style.min.css">
+    <meta charset="UTF-8">
+    <meta name="description" content="An analysis of vacants in Baltimore city. Data is graphed to show common trends among Baltimore neighborhoods with the highest and lowest number of vacancies.">
+    <meta name="keywords" content="Baltimore, Baltimore vacants, Baltimore segregation">
+    <meta name="author" content="Mimi Kim">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="container">
+    <h1>An Analysis of Vacant Buildings in Baltimore City</h1>
+    <p>
+        This is an informational visualization of data regarding vacancies in Baltimore city. This page has been generated using ChartJS, PleaseJS, JavaScript, HTML, SCSS, and the Socrata Open Data API (SODA). The accuracy of the data presented below relies upon the accuracy of the dataset provided by <a href="https://data.baltimorecity.gov/Housing-Development/Vacant-Buildings/qqcv-ihn5" target="_blank">OpenBaltimore</a>, which aggregates data from the <a href="http://www.baltimorehousing.org/" target="_blank">Housing Authority of Baltimore City</a>. Whenever this particular data set is updated, these graphs will update accordingly. The analysis text was last updated <span class="last-updated-date"></span>.
+    </p><p>
+    <strong>Data Bugfix:</strong> As of <span class="last-updated-date"></span>, there is a typo in the dataset's Police Districts column. An additional value of "Notheastern" is saved in this column, which ends up skewing the data so that it looks like the actual NorthEastern police district has little-to-no vacants. I have added a fix in my JavaScript to correctly combine and output the data for the Northeastern district.
+</p>
+
+    <h2>A Visualization of Vacancies By Regional and Political Boundaries</h2>
+
+    <div class="graph__container">
+        <form class="graph__legend">
+            <fieldset class="label" id="graphData">
+                <h4>Display Vacancies by:</h4>
+                <div class="label__row">
+                    <input type="radio" class="radio_button object" name="graphData" id="Neighborhood" value="neighborhood" data-data-type="text" checked>
+                    <label for="Neighborhood">Neighborhood</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button object" name="graphData" id="PoliceDistrict" value="policedistrict" data-data-type="text">
+                    <label for="PoliceDistrict">Police District</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button object" name="graphData" id="CouncilDistrict" value="councildistrict" data-data-type="num">
+                    <label for="CouncilDistrict">Council District</label>
+                </div>
+            </fieldset>
+            <fieldset class="label" id="graphSort">
+                <h4>Sort Data by:</h4>
+                <div class="label__row">
+                    <input type="radio" class="radio_button sort" name="graphSort" id="Alphabetical" value="alphabeticalASC" checked>
+                    <label for="Alphabetical">Alphabetical (ASC)</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button sort" name="graphSort" id="AlphabeticalDESC" value="alphabeticalDESC">
+                    <label for="AlphabeticalDESC">Alphabetical (DESC)</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button sort" name="graphSort" id="VacantsDESC" value="DESC">
+                    <label for="VacantsDESC">Highest Number of Vacants</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button sort" name="graphSort" id="VacantsASC" value="ASC">
+                    <label for="VacantsASC">Lowest Number of Vacants</label>
+                </div>
+            </fieldset>
+            <fieldset class="label hide" id="graphRange">
+                <h4>Change X-Axis Range of Neighborhood:</h4>
+                <div class="label__row">
+                    <input type="radio" class="radio_button range" name="graphRange" id="seeAll" value="all" checked>
+                    <label for="seeAll">See All Results</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button range" name="graphRange" id="seeHalf" value="half">
+                    <label for="seeHalf">See Half of Results</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button range" name="graphRange" id="seeQuarter" value="quarter">
+                    <label for="seeQuarter">See a Quarter of Results</label>
+                </div>
+                <div class="label__row">
+                    <input type="radio" class="radio_button range" name="graphRange" id="seeEighth" value="eighth">
+                    <label for="seeEighth">See an Eighth of Results</label>
+                </div>
+            </fieldset>
+        </form>
+        <div class="graph bar-graph">
+            <canvas id="main-graph"></canvas>
+        </div>
+    </div>
+
+    <div>
+        <h4>Reference Maps:</h4>
+        <ul>
+            <li><a href="https://livebaltimore.com/neighborhoods/" title="A Map of all Baltimore Neighborhoods" target="_blank">Map of Baltimore Neighborhoods</a></li>
+            <li><a href="https://www.google.com/maps/d/viewer?mid=1VB3xXMDgCL0ZccIuYbaaV29VfoU&hl=en_US&ll=39.284688982144964%2C-76.62031999999999&z=11" title="A Map of Baltimore Police Districts" target="_blank">Map of Baltimore Police Districts</a></li>
+            <li><a href="http://www.baltimorecitycouncil.com/council-district-map" title="A Map of Baltimore Council Districts" target="_blank">Map of Baltimore Council Districts</a></li>
+        </ul>
+    </div>
+
+    <div>
+        <h2>Analysis:</h2>
+        <p>
+            Immediately, we can see clear outliers in the data. The top five results are: <a href="https://livebaltimore.com/neighborhoods/broadway-east/" target="_blank">Broadway East</a> (1210 vacants), <a href="https://livebaltimore.com/neighborhoods/sandtown-winchester/" target="_blank">Sandtown-Winchester</a> (811 vacants), <a href="https://livebaltimore.com/neighborhoods/harlem-park/" target="_blank">Harlem Park</a> (718 vacants), <a href="https://livebaltimore.com/neighborhoods/carrollton-ridge/" target="_blank">Carrollton Ridge</a> (730 vacants), and <a href="https://livebaltimore.com/neighborhoods/central-park-heights/" target="_blank">Central Park Heights</a> (659 vacants). The neighborhoods with the lowest recorded number of vacants are barely visible in this graph due to the huge discrepancy between various neighborhoods. Just goes to show how divided a tiny city like Baltimore truly is.
+        </p>
+        <h3>Neighborhoods with the Highest Reported Number of Vacancies</h3>
+        <p>
+            The neighborhood with the absolute highest recorded number of vacancies is Broadway East (<a href="https://en.wikipedia.org/wiki/Broadway_East,_Baltimore" target="_blank">Wikipedia</a>, <a href="https://www.google.com/maps/place/Broadway+East,+Baltimore,+MD+21213/data=!4m2!3m1!1s0x89c8045c28ac6a9d:0xc341a7aec79c09ee?sa=X&ved=0ahUKEwiW7qGAttbSAhWGJiYKHbpgBoAQ8gEIZjAK" target="_blank">View on Google Maps</a>). At the time of this writing, there are 1210 recorded vacancies in this neighborhood. This exceeds the next highest neighborhood, Sandtown-Winchester, by 399 additional buildings. All vacants are contained within an area of 0.342 sq miles<sup><a href="#ref1" class="reference">1</a></sup>, or around 219 acres. There is a recorded population of 7,437 people living in this neighborhood, so the calculated population density is roughly 21,737 per sq mile. It is a densly populated area compared to Baltimore's general density, which hovers around 7,696 people per sq mile. The percentage of people living below the poverty line is 32.4%, far exceeding the city's average of 22.9%. The median income in 2015 was reported to be $32,537.<sup><a href="#ref1" class="reference">1</a></sup>
+        </p><p>
+        The next neighborhood with the highest recorded number of vacancies is Sandtown-Winchester (<a href="https://en.wikipedia.org/wiki/Sandtown-Winchester,_Baltimore" target="_blank">Wikipedia</a>, <a href="https://www.google.com/maps/place/Sandtown-Winchester,+Baltimore,+MD+21217/data=!4m2!3m1!1s0x89c81b4d1f544e4b:0xe9a26793c8415114?sa=X&ved=0ahUKEwi38ePDgtfSAhUiwYMKHSZgARsQ8gEIcTAP" target="_blank">View on Google Maps</a>), a place that used to be known as Baltimore's Harlem, most recently known as the neighborhood where in 2015 Freddie Gray was arrested and eventually died for the possession of a <a href="http://hips.htvapps.com/htv-prod-media.s3.amazonaws.com/ibmig/cms/image/wbal/42144620-freddie-gray-knife-6-jpg.jpg" title="Image of Freddie Gray's Pocket Knife" target="_blank">small pocket knife</a>.<sup><a href="#ref2" class="reference">2</a></sup> This knife is one that is sold commonly throughout the city and suburbs, and is carried by many individuals in the city, with a 3-inch long blade, a seat-belt cutter, and a glass breaker.<sup><a href="#ref3" class="reference">3</a></sup> I have a knife that looks exactly like this from Home Depot. Many people own and carry similar knives.
+    </p><p>
+        Sandtown-Winchester encompasses an area of 0.406 square miles (or around 260 acres).<sup><a href="#ref4" class="reference">4</a></sup> It is reported to have a population of around 9,802, which sets its population density at almost 24,157 people per sq mile surpassing Broadway East. A reported 39.6% of people in this neighborhood live below poverty level, again surpassing Broadway East. The median income in 2015 was $29,765.<sup><a href="#ref4" class="reference">4</a></sup>
+    </p><p>
+        Harlem Park (<a href="https://www.google.com/maps?espv=2&q=harlem+park&bav=on.2,or.&biw=1369&bih=567&dpr=2&ion=1&um=1&ie=UTF-8&sa=X&ved=0ahUKEwjX-N74i9fSAhUGeCYKHZAhDEoQ_AUIBigB" target="_blank">View on Google Maps</a>) is our third highest result. It contains a population of about 6,000 people within a square mileage of 0.312 (or around 200 acres).<sup><a href="#ref5" class="reference">5</a></sup> The population density is 19,205 people per sq mile, which is lower than both Sandtown and Broadway East. The reported median income in 2015 is also lower than the other 2 neighborhoods at $25,162 a year. 40% live below poverty level, the lowest of all three neighborhoods.<sup><a href="#ref5" class="reference">5</a></sup>
+    </p><p>
+        Here is a table with some data for ease of use:
+    </p>
+        <div class="overflow-table">
+            <table class="comparing-neighborhoods" border="1" cellpadding="10">
+                <thead>
+                <tr>
+                    <th class="metrics__title">Metrics</th>
+                    <th>Broadway East</th>
+                    <th>Sandtown&#8209;Winchester</th>
+                    <th>Harlem Park</th>
+                    <th>Carrollton Ridge</th>
+                    <th>Central Park Heights</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="metrics">Number of Reported Vacants</td>
+                    <td>1210 vacants</td>
+                    <td>811 vacants</td>
+                    <td>718 vacants</td>
+                    <td>730 vacants</td>
+                    <td>659 vacants</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Council District</td>
+                    <td>District 13</td>
+                    <td>District 7</td>
+                    <td>District 9</td>
+                    <td>District 9</td>
+                    <td>District 6</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Police District</td>
+                    <td>Eastern District</td>
+                    <td>Western District</td>
+                    <td>Western District</td>
+                    <td>Southwestern District</td>
+                    <td>Northwestern District</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Area (in&nbsp;mi<sup>2</sup>)</td>
+                    <td>0.342 mi<sup>2</sup></td>
+                    <td>0.406 mi<sup>2</sup></td>
+                    <td>0.312 mi<sup>2</sup></td>
+                    <td>0.226 mi<sup>2</sup></td>
+                    <td>0.442 mi<sup>2</sup></td>
+                </tr>
+                <tr>
+                    <td class="metrics">Population</td>
+                    <td>7,437</td>
+                    <td>9,802</td>
+                    <td>6,000</td>
+                    <td>4,500</td>
+                    <td>6,654</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Population Density</td>
+                    <td>21,737 ppl per mi<sup>2</sup></td>
+                    <td>24,157 ppl per mi<sup>2</sup></td>
+                    <td>19,205 ppl per mi<sup>2</sup></td>
+                    <td>19,879 ppl per mi<sup>2</sup></td>
+                    <td>15,061 ppl per mi<sup>2</sup></td>
+                </tr>
+                <tr>
+                    <td class="metrics">Population Below Poverty (city average: 22.9%)</td>
+                    <td>32.4%</td>
+                    <td>39.6%</td>
+                    <td>40.0%</td>
+                    <td>43.9%</td>
+                    <td>34.7%</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Median Income in 2015</td>
+                    <td>$32,537/yr</td>
+                    <td>$29,765/yr</td>
+                    <td>$25,162/yr</td>
+                    <td>$19,879/yr</td>
+                    <td>$31,376/yr</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <ul>
+            <li><strong>Average Area:</strong> 0.346 mi<sup>2</sup></li>
+            <li><strong>Average Population:</strong> 6879</li>
+            <li><strong>Average Population Density:</strong> 20,008 ppl per mi<sup>2</sup></li>
+            <li><strong>Average Percentage Below Poverty:</strong> 38.12%</li>
+            <li><strong>Average Median Income:</strong> $27,744</li>
+        </ul>
+
+        <h3>Neighborhoods with the Lowest Reported Number of Vacancies</h3>
+        <p>
+            Let's look at the neighborhoods with the lowest recorded number of vacancies. At the time of this writing, <span class="last-updated-date"></span>, there is a tie between 13 neighborhoods&mdash; <a href="https://livebaltimore.com/neighborhoods/barre-circle/" target="_blank">Barre Circle</a>, <a href="https://livebaltimore.com/neighborhoods/evesham-park/" target="_blank">Evesham Park</a>, <a href="https://livebaltimore.com/neighborhoods/forest-park-golf-course/" target="_blank">Forest Park Golf Course</a>, the <a href="http://www.city-data.com/neighborhood/Jones-Falls-Area-Baltimore-MD.html" target="_blank">Jones Falls Area</a>, <a href="https://livebaltimore.com/neighborhoods/heritage-crossing/" target="_blank">Heritage Crossing</a>, <a href="https://livebaltimore.com/neighborhoods/hoes-heights/" target="_blank">Hoes Heights</a>, <a href="https://livebaltimore.com/neighborhoods/homeland/" target="_blank">Homeland</a>,  <a href="https://livebaltimore.com/neighborhoods/oaklee/" target="_blank">Oaklee</a>, <a href="http://www.city-data.com/neighborhood/Orangeville-Industrial-Area-Baltimore-MD.html" target="_blank">Orangeville Industrial Area</a>, <a href="https://livebaltimore.com/neighborhoods/penn-fallsway/" target="_blank">Penn-Fallsway</a>, <a href="https://livebaltimore.com/neighborhoods/radnor-winston/" target="_blank">Radnor-Winston</a>, <a href="https://livebaltimore.com/neighborhoods/roland-park/" target="_blank">Roland Park</a>, and <a href="https://livebaltimore.com/neighborhoods/wyman-park/" target="_blank">Wyman Park</a>&mdash; all of which have a recorded number of only 1 vacant. I am genuinely surprised to see certain neighborhoods in this list, so let's investigate to see what some common demoninators might be. We are assuming that a lack of reporting, or lack of available information, is not skewing the data.
+        </p><p>
+        For brevity, I have compiled the table below:
+    </p>
+        <div class="overflow-table">
+            <table class="comparing-neighborhoods" border="1" cellpadding="10">
+                <thead>
+                <tr>
+                    <th class="metrics__title">Metrics</th>
+                    <th>Barre Circle</th>
+                    <th>Evesham Park</th>
+                    <th>Forest Park Golf Course</th>
+                    <th>Jones Falls Area</th>
+                    <th>Heritage Crossing</th>
+                    <th>Hoes Heights</th>
+                    <th>Homeland</th>
+                    <th>Oaklee</th>
+                    <th>Orangeville Industrial Area</th>
+                    <th>Penn&#8209;Fallsway</th>
+                    <th>Radnor&#8209;Winston</th>
+                    <th>Roland Park</th>
+                    <th>Wyman Park</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="metrics">Number of Reported Vacants</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                    <td>1&nbsp;vacant</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Council District</td>
+                    <td>District 10</td>
+                    <td>District 4</td>
+                    <td>District 8</td>
+                    <td>District 7</td>
+                    <td>District 11</td>
+                    <td>District 14</td>
+                    <td>District 4</td>
+                    <td>District 10</td>
+                    <td>District 13</td>
+                    <td>District 12</td>
+                    <td>District 4</td>
+                    <td>District 7</td>
+                    <td>District 14</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Police District</td>
+                    <td>Southern District</td>
+                    <td>Northern District</td>
+                    <td>Northwestern District</td>
+                    <td>Northern District</td>
+                    <td>Western District</td>
+                    <td>Northern District</td>
+                    <td>Northern District</td>
+                    <td>Southwestern District</td>
+                    <td>Southeastern District</td>
+                    <td>Eastern District</td>
+                    <td>Northern District</td>
+                    <td>Northern District</td>
+                    <td>Northern District</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Area (in&nbsp;mi<sup>2</sup>)</td>
+                    <td>0.022 mi<sup>2</sup></td>
+                    <td>0.072 mi<sup>2</sup></td>
+                    <td>0.237 mi<sup>2</sup></td>
+                    <td>0.298 mi<sup>2</sup></td>
+                    <td>0.083 mi<sup>2</sup></td>
+                    <td>0.079 mi<sup>2</sup></td>
+                    <td>0.0612 mi<sup>2</sup></td>
+                    <td>0.043 mi<sup>2</sup></td>
+                    <td>0.439 mi<sup>2</sup></td>
+                    <td>0.140 mi<sup>2</sup></td>
+                    <td>0.078 mi<sup>2</sup></td>
+                    <td>0.941 mi<sup>2</sup></td>
+                    <td>0.106 mi<sup>2</sup></td>
+                </tr>
+                <tr>
+                    <td class="metrics">Population</td>
+                    <td>362</td>
+                    <td>487</td>
+                    <td>2,649</td>
+                    <td>1,575</td>
+                    <td>1,288</td>
+                    <td>821</td>
+                    <td>3,153</td>
+                    <td>101</td>
+                    <td>539</td>
+                    <td>15,940</td>
+                    <td>679</td>
+                    <td>4,888</td>
+                    <td>1,737</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Population Density</td>
+                    <td>16,102 ppl per mi<sup>2</sup></td>
+                    <td>6,759 ppl per mi<sup>2</sup></td>
+                    <td>11,161 ppl per mi<sup>2</sup></td>
+                    <td>5,287 ppl per mi<sup>2</sup></td>
+                    <td>15,520 ppl per mi<sup>2</sup></td>
+                    <td>10,378 ppl per mi<sup>2</sup></td>
+                    <td>5,150 ppl per mi<sup>2</sup></td>
+                    <td>2,329 ppl per mi<sup>2</sup></td>
+                    <td>1,228 ppl per mi<sup>2</sup></td>
+                    <td>114,055 ppl per mi<sup>2</sup></td>
+                    <td>8,662 ppl per mi<sup>2</sup></td>
+                    <td>5,195 ppl per mi<sup>2</sup></td>
+                    <td>16,362 ppl per mi<sup>2</sup></td>
+                </tr>
+                <tr>
+                    <td class="metrics">Population Below Poverty (city average: 22.9%)</td>
+                    <td>30.8%</td>
+                    <td>6.3%</td>
+                    <td>24.4%</td>
+                    <td>18.3%</td>
+                    <td>44.2%</td>
+                    <td>6.4%</td>
+                    <td>6.0%</td>
+                    <td>18.5%</td>
+                    <td>31.1%</td>
+                    <td>42.5%</td>
+                    <td>24.4%</td>
+                    <td>8.5%</td>
+                    <td>7.9%</td>
+                </tr>
+                <tr>
+                    <td class="metrics">Median Income in 2015</td>
+                    <td>$55,041/yr</td>
+                    <td>$90,794/yr</td>
+                    <td>$47,850/yr</td>
+                    <td>$65,808/yr</td>
+                    <td>$19,417/yr</td>
+                    <td>$64,971/yr</td>
+                    <td>$119,974/yr</td>
+                    <td>$51,769/yr</td>
+                    <td>$33,218/yr</td>
+                    <td>$42,975/yr</td>
+                    <td>$40,232/yr</td>
+                    <td>$114,052/yr</td>
+                    <td>$69,147/yr</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <ul>
+            <li><strong>Average Area:</strong> 0.199 mi<sup>2</sup></li>
+            <li><strong>Average Population:</strong> 2632</li>
+            <li><strong>Average Population Density:</strong> 16,784 ppl per mi<sup>2</sup></li>
+            <li><strong>Average Percentage Below Poverty:</strong> 20.7%</li>
+            <li><strong>Average Median Income:</strong> $62,7111</li>
+        </ul>
+        <p>
+            Although these neighborhoods have some outliers in income, poverty level, and population density, generally speaking these neighborhoods have a smaller population in a much smaller area. On average, the median income level is $62,711 a year. The average percentage of those living below poverty is 20.7%. Compare this to the average median income level of the neighborhoods that had higher numbers of vacants&mdash; $27,744. There is a clear correlation between poverty and vacant buildings. These are areas that the city has forgotten, or has deliberately neglected in favor of building up other neighborhoods.
+        </p><p>
+        The neighborhoods mostly skew towards being in the Northern district which is a fairly rich area, nestled right in Baltimore's White L (traverses up I&#8209;83). In comparison, the neighborhoods that scored as having the highest number of vacant buildings were located in the Black Butterfly.
+    </p>
+        <p>
+            The terms "White L" and "Black Butterfly" are often used to describe Baltimore's highly segregated neighborhoods. This disparity developed as a result of redlining during the Jim Crow era as a means to further segregate the city.<sup><a href="#ref6" class="reference">6</a></sup> Redlining is the practice of denying services to people based on the racial composition of their neighborhood. Often this meant denying bank loans or housing in order to keep people from entering new communities or leaving their own. This could also mean something as basic as refusing to build or stock grocery stores or retail stores, refusing easy access to public transportation, or simply allowing infrastructure to crumble in "less desirable" areas. These detrimental, discriminatory practices have made lasting effects into modern day and can be easily seen in the differences between neighborhoods. Institutionalized advantages and disadvantages are briefly listed in this chart below:<sup><a href="#ref7" class="reference">7</a></sup>
+        </p>
+        <img src="http://tu9srvbirvvtnsr3d3cudhjiaw1nlmnvbq00.g00.citypaper.com/g00/2_d3d3LmNpdHlwYXBlci5jb20%3D_/TU9SRVBIRVVTNSRodHRwOi8vd3d3LnRyYmltZy5jb20vaW1nLTU3NzMwNWJiL3R1cmJpbmUvYmNwbmV3cy10d28tYmFsdGltb3Jlcy10aGUtd2hpdGUtbC12cy10aGUtYmxhYy0wMDM%2FaTEwYy5tYXJrLmltYWdlLnR5cGU%3D_$/$/$/$" alt="Table of different Policies and Practice between the White L and the Black Butterfly" class="responsive">
+        <p>
+            Looking back at the graph at the top of the page, sorting the data by Police District and by Council District reveals that the areas that have the highest number of vacant buildings also fall into the "Black Butterfly" regional area.
+        </p><p>
+            One very, very glaring example of different treatment is the Baltimore Police Department's treatment of people who did not abide by the curfew during the 2015 Baltimore Protests. On April 28, 2015, a mandatory curfew was declared in the city of Baltimore.<sup><a href="#ref8" class="reference">8</a></sup> Residents were ordered to go home and stay home after 10:00pm. There were many protests and subsequently arrests. However, many residents who lived in areas such as Canton, Hampden, or Remington shared stories about how they were "chilling outside, drinking beers" past the 10pm curfew. Police response was little to none.
+        </p>
+        <h3>Vacants to Value Map of Properties Available for Sale</h3>
+        <p>
+            Vacants to Value (V2V) is a Baltimore housing initiative that gives potential home buyers or developers grants and tax breaks as an incentive to invest and rehab vacant properties and lots in Baltimore. The website provides an interactive map that displays the location of V2V properties for sale.<sup><a href="#ref8" class="reference">8</a></sup> Below is a snapshot of the map, taken on March 15, 2017. The Purple Squares are vacant lots, and Yellow Circles are vacant buildings.
+        </p>
+        <img src="assets/img/vacants-to-value-map.png" alt="Vacants to Value: Vacant Properties for Sale Map" class="responsive">
+        <p>
+            An overview of this map very apparently shows the L and Butterfly. You can explore the map yourself at <a href="http://www.vacantstovalue.org/Explore.aspx#propmap" target="_blank">http://www.vacantstovalue.org/Explore.aspx#propmap</a> and zoom into specific areas for more details.
+        </p>
+        <h3>My Thoughts and Experiences</h3>
+        <p>
+            In the time that I have lived here in this conflicted city, I have witnessed vast differences in public services between neighborhoods. I have watched as police rush to respond to a distress call in Locust Point and remain posted for days after, while taking close to 45 minutes to show up when a fatal shooting occurs in a residential Pigtown street. I can only imagine the response time in neighborhoods that are located further away from the insulated L. I have seen the complete lack of fresh produce (and an increase in fried, high in saturated fats, trans fats, generally unhealthy "instant" foods) sold in lower-income neighborhoods. In order to get access to a supermarket with fresh produce, a person often has to travel outside of their neighborhood, a feat that could be nearly impossible if that person is without a vehicle or access to public transportation.
+        </p><p>
+        I have watched many, many start-ups in Baltimore engage in discriminatory hiring. These are companies that exist to boost and revitalize the city's economy, but are only serving to uplift people of a certain type and demographic. This mirrors many of the same practices enforced historically and still to this day that continue to deepen the divide amongst the population in the city. These companies, whether intentionally or by ignorant mistake, continue to perpetuate the "us versus scary them" mentality that segregates this city.
+    </p><p>
+        This has only strengthened my resolve that we must fight harder to bring attention to inequality, to wake people up and force them to take a step back and observe, and more importantly create positive actions and legislation to curb these negative snowballing effects.
+    </p>
+        <footer>
+            <p class="date-of-writing">Last Updated <span class="last-updated-date"></span>, using the data available on that date. Data is subject to change.</p>
+
+            <a href="https://github.com/mimikim/Analysis-of-Vacant-Buildings-in-Baltimore-City" target="_blank">Github</a> | <a href="http://www.mimikimwebdeveloper.com" target="_blank">Mimi&nbsp;Kim&nbsp;Web&nbsp;Developer</a>
+            <div class="citations">
+                <h3>References & Citations:</h3>
+                <ol>
+                    <li id="ref1"><a href="http://www.city-data.com/neighborhood/Broadway-East-Baltimore-MD.html" target="_blank">Broadway East Neighborhood in Baltimore</a>, City-Data.com, retrieved March 14, 2017</li>
+                    <li id="ref2"><a href="https://en.wikipedia.org/wiki/Death_of_Freddie_Gray" target="_blank">Death of Freddie Gray</a>, Wikipedia, retrieved March 14 2017</li>
+                    <li id="ref3"><a href="http://www.wbaltv.com/article/i-team-obtains-photo-of-freddie-gray-s-knife/7148714" target="_blank">I-Team obtains photo of Freddie Gray's knife</a>, WBAL-TV 11, October 17 2016</li>
+                    <li id="ref4"><a href="http://www.city-data.com/neighborhood/Sandtown-Winchester-Baltimore-MD.html" target="_blank">Sandtown-Winchester Neighborhood in Baltimore</a>, City-Data.com, retrieved March 14, 2017</li>
+                    <li id="ref5"><a href="http://www.city-data.com/neighborhood/Harlem-Park-Baltimore-MD.html" target="_blank">Harlem Park Neighborhood in Baltimore</a>, City-Data.com, retrieved March 14, 2017</li>
+                    <li id="ref6"><a href="http://hub.jhu.edu/2016/04/14/redlining-baltimore-public-health-disparities/" target="_blank">Tale of two Baltimores: Experts discuss roots of city health disparities</a>, Hub.jhu.edu, April 14, 2016</li>
+                    <li id="ref7"><a href="http://www.citypaper.com/bcpnews-two-baltimores-the-white-l-vs-the-black-butterfly-20160628-htmlstory.html" target="_blank">Two Baltimores: The White L vs the Black Butterfly</a>, CityPaper.com, June 28, 2016</li>
+                    <li id="ref8"><a href="https://en.wikipedia.org/wiki/2015_Baltimore_protests" target="_blank">2015 Baltimore Protests</a>, Wikipedia, retrieved March 15, 2017</li>
+                    <li id="ref9"><a href="http://www.vacantstovalue.org" target="_blank">Vacants to Value</a>, VacantstoValue.org, retrieved March 16, 2017</li>
+                </ol>
+            </div>
+        </footer>
+    </div>
+    <script src="assets/js/all.min.js"></script>
+</body>
+</html>

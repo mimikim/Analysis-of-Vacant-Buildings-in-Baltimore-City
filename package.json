@@ -1,0 +1,50 @@
+{
+  "name": "analysis-of-vacant-buildings-in-baltimore-city",
+  "version": "1.0.0",
+  "description": "An analysis of vacant properties in Baltimore city",
+  "main": "index.js",
+  "dependencies": {
+    "gulp": "^3.9.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.0",
+    "babel-core": "^6.24.0",
+    "babel-preset-es2015": "^6.24.0",
+    "gulp-autoprefixer": "^3.1.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-jshint": "^2.0.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0",
+    "gulp-uglify": "^2.1.0",
+    "jshint": "^2.9.4"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mimikim/Analysis-of-Vacant-Buildings-in-Baltimore-City.git"
+  },
+  "keywords": [
+    "vacants",
+    "baltimore",
+    "city",
+    "socrata",
+    "api",
+    "open",
+    "data",
+    "datasets"
+  ],
+  "author": "Mimi Kim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mimikim/Analysis-of-Vacant-Buildings-in-Baltimore-City/issues"
+  },
+  "homepage": "https://github.com/mimikim/Analysis-of-Vacant-Buildings-in-Baltimore-City#readme"
+}
